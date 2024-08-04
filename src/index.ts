@@ -36,7 +36,7 @@ const bootstrap = async () => {
       origin: [/localhost*/],
     };
 
-    // require("./dbs/init.my-sql");
+    require("./dbs/init.my-sql");
     // require("./dbs/init.redis");
 
     app.use(cors(corsConfig));

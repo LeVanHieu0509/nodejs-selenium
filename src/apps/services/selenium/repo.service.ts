@@ -80,7 +80,7 @@ export const postToGroup = async (driver: WebDriver, content: string) => {
     const parentbuttonEl = await buttonEl.findElement(By.xpath(".."));
     await parentbuttonEl.click();
   } catch (e) {
-    console.error("Lỗi khi tìm kiếm hoặc nhấp vào phần tử:", e);
+    console.log("Lỗi khi tìm kiếm hoặc nhấp vào phần tử:", e);
   }
 };
 

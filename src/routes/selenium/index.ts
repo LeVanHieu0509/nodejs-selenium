@@ -5,6 +5,6 @@ import { asyncHandler } from "../../helpers/asyncHandler";
 
 const router = require("express").Router();
 
-router.post("/selenium", asyncHandler(SeleniumController.getSelenium));
+router.post("/post-to-group-facebook", asyncHandler(SeleniumController.postToGroupFacebook));
 
 export default router;
