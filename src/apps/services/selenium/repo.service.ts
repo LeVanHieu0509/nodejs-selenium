@@ -19,16 +19,24 @@ export const loginAccount = async (driver: WebDriver, email: string, pass: strin
     await passInput.sendKeys(pass);
 
     // Nhấp vào nút đăng nhập
-    const loginSubmit = await waitForElement(driver, By.xpath("//span[contains(.,'Log in')]"));
-    const parentElement = await loginSubmit.findElement(By.xpath(".."));
-    await parentElement.click();
-    await delay(5000);
+    const loginSubmit = await waitForElement(
+      driver,
+      By.xpath(
+        "//div[@data-bloks-name='bk.components.Flexbox' and @style='pointer-events: inherit; height: 100%; width: 100%;']//div[@data-bloks-name='bk.components.Flexbox' and @style='pointer-events: none; opacity: 1; align-items: center; flex-direction: row; justify-content: center;']//span[@data-bloks-name='bk.components.TextSpan']"
+      )
+    );
+    await loginSubmit.click();
+    await delay(2000);
 
     // Tìm phần tử 'Lúc khác'
-    const noSaveAccount = await waitForElement(driver, By.xpath("//div[@aria-label='Lúc khác']"));
+    const noSaveAccount = await waitForElement(
+      driver,
+      By.xpath(
+        "//div[@data-bloks-name='bk.components.Flexbox' and @class='wbloks_1' and contains(@style, 'pointer-events: none; opacity: 1; height: 44px; min-width: 44px; flex-grow: 1; padding-left: 20px; padding-right: 20px; background: rgba(255, 255, 255, 0); border: 1px solid rgb(203, 210, 217); border-radius: 22px; align-items: center; flex-direction: row; justify-content: center;')]"
+      )
+    );
 
-    const parentbuttonEl = await noSaveAccount.findElement(By.xpath(".."));
-    await parentbuttonEl.click();
+    await noSaveAccount.click();
     await delay(2000);
   } catch (e) {
     console.error("Có lỗi xảy ra:", e);
@@ -93,9 +101,9 @@ export async function createDriver(): Promise<WebDriver> {
     "window-size=315,900",
     "--incognito",
     "--lang=vi",
-    "disable-popup-blocking",
-    "disable-notifications",
-    "disable-infobars"
+    "--disable-popup-blocking",
+    "--disable-notifications",
+    "--disable-infobars"
   );
   options.addArguments(
     "user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/98.0.4758.85 Mobile/15E148 Safari/604.1"
