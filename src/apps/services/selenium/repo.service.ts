@@ -1,10 +1,31 @@
+import { cloneDeep } from "lodash";
 import path from "path";
-import { Browser, Builder, By, until, WebDriver, WebElement } from "selenium-webdriver";
+import { Browser, Builder, By, Key, until, WebDriver, WebElement } from "selenium-webdriver";
 import * as chrome from "selenium-webdriver/chrome";
+import { exec } from "child_process";
 
 export function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+export const uploadImage = async (driver: WebDriver, imagePath: string) => {
+  try {
+    // Tìm phần tử "Ảnh" và nhấp vào nó
+    const imageButton = await driver.wait(until.elementLocated(By.xpath("//div[@aria-label='Photos']")), 10000);
+    await imageButton.click();
+
+    // Giả sử sau khi nhấp vào, một hộp thoại chọn tệp xuất hiện
+    // Tìm phần tử input kiểu file (nếu có)
+    const fileInput = await driver.wait(until.elementLocated(By.css('input[type="file"]')), 10000);
+
+    // Gửi đường dẫn tệp đến phần tử input
+    await fileInput.sendKeys(imagePath);
+
+    console.log("Ảnh đã được tải lên thành công.");
+  } catch (error) {
+    console.error("Lỗi khi tải lên ảnh:", error);
+  }
+};
 
 export const loginAccount = async (driver: WebDriver, email: string, pass: string) => {
   try {
@@ -49,13 +70,10 @@ export async function waitForElement(driver: WebDriver, locator: By, timeout: nu
     const element = await driver.findElement(locator);
     await driver.wait(until.elementIsVisible(element), timeout);
     return element;
-  } catch (e) {
-    console.error(`Phần tử với locator ${locator} không được tìm thấy trong khoảng thời gian ${timeout}ms`);
-    throw e;
-  }
+  } catch (e) {}
 }
 
-export const postToGroup = async (driver: WebDriver, content: string) => {
+export const postToGroup = async (driver: WebDriver, content: string, files: string) => {
   try {
     // Sử dụng hàm chờ để tìm phần tử
     await delay(3000);
@@ -65,14 +83,20 @@ export const postToGroup = async (driver: WebDriver, content: string) => {
       By.xpath("//div[@id='screen-root']/div/div[2]/div[6]/div[2]/div"),
       10000
     );
+
     await postEl.click();
 
     // Chờ và click vào text box
     await delay(3000);
-    const textBoxEl = await waitForElement(driver, By.xpath("//div[contains(text(),'Bạn viết gì đi')]"), 10000);
+    const textBoxEl = await waitForElement(
+      driver,
+      By.xpath(
+        "//div[@data-mcomponent='MContainer' and @data-type='container']//div[@role='button' and @data-mcomponent='ServerTextArea' and @data-type='text']"
+      ),
+      10000
+    );
 
-    const parentElement = await textBoxEl.findElement(By.xpath("./ancestor::div[@role='button']"));
-    await driver.executeScript("arguments[0].click();", parentElement);
+    await driver.executeScript("arguments[0].click();", textBoxEl);
 
     // Chờ và nhập nội dung vào textarea
     await delay(3000); // Đợi một chút trước khi tìm textarea
@@ -83,12 +107,23 @@ export const postToGroup = async (driver: WebDriver, content: string) => {
     } else {
       console.error("Textarea not found");
     }
-    // Tìm phần tử cha dựa trên phần tử con có chứa văn bản 'ĐĂNG'
-    const buttonEl = await waitForElement(driver, By.xpath("//div[@aria-label='ĐĂNG']"), 10000);
+
+    // Thực hiện kéo và thả
+    for (const file of files) {
+      let f = cloneDeep(file) as any;
+      const imagePath = path.resolve(__dirname, `/Users/hieulevan/Desktop/${f.fileName}`);
+      await uploadImage(driver, imagePath);
+    }
+
+    //Tìm phần tử cha dựa trên phần tử con có chứa văn bản 'ĐĂNG'
+    const buttonEl = await waitForElement(driver, By.xpath("//div[@aria-label='POST']"), 10000);
     const parentbuttonEl = await buttonEl.findElement(By.xpath(".."));
     await parentbuttonEl.click();
+    return true;
   } catch (e) {
     console.log("Lỗi khi tìm kiếm hoặc nhấp vào phần tử:", e);
+
+    return false;
   }
 };
 

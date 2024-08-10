@@ -32,6 +32,7 @@ interface PostData {
   pass: string;
   listGroup: string[];
   text: string;
+  files: string;
 }
 
 export interface TaskData {
@@ -59,15 +60,14 @@ export const postToGroupFacebook = async ({ data }: TaskData) => {
           await delay(2000);
           await driver.get(`https://m.facebook.com/groups/${content}`);
           const postContent = data[index].text;
+          const files = data[index].files;
 
-          if (postContent) {
-            await postToGroup(driver, postContent);
-          }
+          await postToGroup(driver, postContent, files);
         }
 
         state = "done";
       } finally {
-        await driver.quit();
+        // await driver.quit();
       }
     };
 
@@ -75,11 +75,19 @@ export const postToGroupFacebook = async ({ data }: TaskData) => {
 
     await Promise.all(tasks);
 
-    return {
-      status: "1",
-      data: state,
-      message: "Success",
-    };
+    if (state == "done") {
+      return {
+        status: "1",
+        data: state,
+        message: "Success",
+      };
+    } else {
+      return {
+        status: "1",
+        data: state,
+        message: "Success",
+      };
+    }
   } catch (e) {
     return {
       status: "-1",
