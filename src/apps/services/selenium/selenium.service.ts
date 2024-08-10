@@ -42,7 +42,6 @@ export interface TaskData {
 export const postToGroupFacebook = async ({ data }: TaskData) => {
   let state = "init";
   let count = data.length;
-  console.log({ data });
   try {
     const createAndExecuteTask = async (index) => {
       const driver = await createDriver();
@@ -52,13 +51,13 @@ export const postToGroupFacebook = async ({ data }: TaskData) => {
       }
 
       try {
-        await driver.get("https://m.facebook.com");
+        await driver.get("https://mbasic.facebook.com");
         await delay(2000);
         await loginAccount(driver, data[index].email, data[index].pass);
 
-        for (const content of data[index].listGroup) {
+        for (const idGroup of data[index].listGroup) {
           await delay(2000);
-          await driver.get(`https://m.facebook.com/groups/${content}`);
+          await driver.get(`https://mbasic.facebook.com/groups/${idGroup}`);
           const postContent = data[index].text;
           const files = data[index].files;
 
@@ -67,7 +66,7 @@ export const postToGroupFacebook = async ({ data }: TaskData) => {
 
         state = "done";
       } finally {
-        // await driver.quit();
+        await driver.quit();
       }
     };
 
