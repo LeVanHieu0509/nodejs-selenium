@@ -59,9 +59,10 @@ export const postToGroupFacebook = async ({ data }: TaskData) => {
           await delay(2000);
           await driver.get(`https://mbasic.facebook.com/groups/${idGroup}`);
           const postContent = data[index].text;
+          const newConcatContent = postContent.concat(` #gioi_thieu_viec_lam_duc_phuc_${idGroup}`)
           const files = data[index].files;
 
-          await postToGroup(driver, postContent, files);
+          await postToGroup(driver, newConcatContent, files);
         }
 
         state = "done";

@@ -67,7 +67,7 @@ export const postToGroup = async (driver: WebDriver, content: string, files: str
 
     for (const file of files) {
       let f = cloneDeep(file) as any;
-      const imagePath = path.resolve(__dirname, `/Users/hieulevan/Desktop/${f.fileName}`);
+      const imagePath = path.resolve(__dirname, `D:/image/${f.fileName}`);
       await uploadImage(driver, imagePath);
     }
 
