@@ -36,7 +36,7 @@ const bootstrap = async () => {
       origin: [/localhost*/],
     };
 
-    require("./dbs/init.my-sql");
+    // require("./dbs/init.my-sql");
     // require("./dbs/init.redis");
 
     app.use(cors(corsConfig));
@@ -60,7 +60,7 @@ const bootstrap = async () => {
 
     server.applyMiddleware({ app, cors: corsConfig });
     route(app);
-    let port = 3003;
+    let port = 3010;
     const serverVip = app.listen({ port }, () => {
       console.log(`🚀 Server ready at http://localhost:${port}${server.graphqlPath}`);
     });
