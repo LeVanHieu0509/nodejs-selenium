@@ -1,33 +1,32 @@
-version: "3" # chọn viết theo bản 3 docs.docker.com/compose/compose-file/
+version: "3"
 
 networks:
-  # TẠO NETWORK
   my-networks:
     driver: bridge
 
 volumes:
-  # TẠO Ổ ĐĨA
   dir-site:
     driver: local
-    # ổ đĩa này lưu dữ liệu ở /mycode/
     driver_opts:
-      device: ${PWD}/backup # Hãy đảm bảo có thư mục /mycode/default
-      o: bind
+      device: ${PWD}/backup
       type: none
+      o: bind
 
 services:
-  # Container My SQL
   my-sql:
     container_name: mysql-tap-hoa
     image: mysql:8.0
     restart: always
+<<<<<<< Updated upstream
 
+=======
+    networks:
+      - my-networks
+>>>>>>> Stashed changes
     command: mysqld --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     environment:
       MYSQL_ROOT_PASSWORD: 123abc
       MYSQL_DATABASE: taphoa-db
-      #      MYSQL_USER: sandbox_user
-      #      MYSQL_PASSWORD: passpass
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
     ports:
       - "3306:3306"
@@ -35,4 +34,38 @@ services:
       - "./docker/db/data:/var/lib/mysql"
       - "./docker/db/my.cnf:/etc/mysql/my.cnf"
       - "./docker/db/sql:/docker-entrypoint-initdb.d"
+<<<<<<< Updated upstream
       - ${PWD}/db:/var/lib/mysql # Ánh xạ file từ máy host vào container có nghĩa là nếu sửa ở file ở máy host
+=======
+      - ${PWD}/db:/var/lib/mysql
+
+  node-selenium:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: node-selenium
+    restart: always
+    depends_on:
+      - my-sql
+    networks:
+      - my-networks
+    volumes:
+      - dir-site:/home/sites
+    ports:
+      - 8888:3003
+
+  next-selenium:
+    build:
+      context: ../next-selenium
+      dockerfile: Dockerfile
+    container_name: nextjs
+    restart: always
+    networks:
+      - my-networks
+    volumes:
+      - ./:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - 9999:3000
+>>>>>>> Stashed changes
