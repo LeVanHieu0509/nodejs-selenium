@@ -63,7 +63,6 @@ COPY --from=builder /opt/app-root/src/dist ./dist
 COPY --from=builder /opt/app-root/src/yarn.lock ./yarn.lock
 COPY --from=builder /opt/app-root/src/ormconfig.ts ./ormconfig.ts
 COPY --from=builder /opt/app-root/src/schema.gql ./schema.gql
-
 COPY --from=builder /opt/app-root/src/.env ./.env
 COPY --from=builder /opt/app-root/src/fonts ./fonts
 
