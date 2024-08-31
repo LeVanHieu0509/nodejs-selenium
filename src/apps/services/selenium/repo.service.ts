@@ -65,14 +65,20 @@ export const postToGroup = async (driver: WebDriver, content: string, files: str
     await xc_message.click();
     await driver.executeScript("arguments[0].value = arguments[1];", xc_message, content);
 
-    for (const file of files) {
-      let f = cloneDeep(file) as any;
-      const imagePath = path.resolve(__dirname, `C:/Users/Admin/Downloads/${f.fileName}`);
-      await uploadImage(driver, imagePath);
+    if(files){
+      for (const file of files) {
+        let f = cloneDeep(file) as any;
+        const imagePath = path.resolve(__dirname, `C:/Users/Admin/Downloads/${f.fileName}`);
+        await uploadImage(driver, imagePath);
+      }
     }
-
+    
+    delay(5000)
     const view_post = await waitForElement(driver, By.name("view_post"), 10000);
     await view_post.click();
+    console.log("Dang thành cong");
+    console.log("-----------------------------------------------------------------");
+
     return true;
   } catch (e) {
     console.log("Lỗi khi tìm kiếm hoặc nhấp vào phần tử:", e);
