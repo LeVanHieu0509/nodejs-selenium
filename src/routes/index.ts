@@ -8,6 +8,7 @@ import products from "./products";
 import categories from "./categories";
 import dashboard from "./dashboard";
 import selenium from "./selenium";
+import bot from "./bot";
 
 function route(app) {
   app.use(
@@ -80,6 +81,14 @@ function route(app) {
       next();
     },
     selenium
+  );
+
+  app.use(
+    "/v1/api/bot",
+    function (req, res, next) {
+      next();
+    },
+    bot
   );
 
   app.use((req, res, next) => {

@@ -12,6 +12,7 @@ import { ApolloServer } from "apollo-server-express";
 import { GraphQLError, GraphQLFormattedError } from "graphql";
 //nằm ở đây và chiếm bộ nhớ. có thể gây ra conflict khi đặt.
 import buildSchema from "./apps/modules/graphql/schema";
+import { configBot } from "./apps/loggers/telegram.log";
 
 dotenv.config();
 
@@ -38,7 +39,7 @@ const bootstrap = async () => {
 
     require("./dbs/init.my-sql");
     // require("./dbs/init.redis");
-
+    configBot();
     app.use(cors(corsConfig));
 
     //Apolo server sẽ tạo graphql server,
