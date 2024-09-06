@@ -5,4 +5,4 @@ rm -Rf dist
 yarn
 yarn build
 
-pm2 restart nodejs_selenium
+pm2 restart homeease-be-cms
