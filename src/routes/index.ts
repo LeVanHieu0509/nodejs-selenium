@@ -10,6 +10,7 @@ import dashboard from "./dashboard";
 import selenium from "./selenium";
 import housekeeper from "./housekeeper";
 import homeowner from "./homeowner";
+import bot from "./bot";
 
 function route(app) {
   app.use(
@@ -98,6 +99,13 @@ function route(app) {
       next();
     },
     housekeeper
+  );
+  app.use(
+    "/v1/api/bot",
+    function (req, res, next) {
+      next();
+    },
+    bot
   );
 
   app.use((req, res, next) => {

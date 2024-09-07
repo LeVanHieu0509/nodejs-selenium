@@ -11,7 +11,7 @@
     "dev": "nodemon npm-run-all build watch",
     "build": "npm-run-all clean tsc",
     "watch": "tsc-watch --onSuccess \"node dist/index\" --onFailure \"echo Beep! Compilation Failed\" --compiler typescript/bin/tsc",
-    "start": "nodemon NODE_ENV=production node dist/index.js"
+    "start": "NODE_ENV=production node dist/index.js"
   },
   "keywords": [],
   "author": "",
@@ -63,6 +63,7 @@
     "mysql2": "^3.6.1",
     "nanoid": "3",
     "node-fetch": "2.6.1",
+    "node-telegram-bot-api": "^0.66.0",
     "nodemon": "^3.0.1",
     "pdfmake": "^0.2.8",
     "pg": "^8.11.3",
@@ -73,6 +74,7 @@
     "type-graphql": "^1.1.1",
     "typedi": "^0.8.0",
     "typeorm": "^0.2.37",
+    "typeorm-ts-node-esm": "0.3.20",
     "typeorm-typedi-extensions": "^0.2.3"
   },
   "optionalDependencies": {
