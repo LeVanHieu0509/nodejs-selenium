@@ -8,6 +8,8 @@ import products from "./products";
 import categories from "./categories";
 import dashboard from "./dashboard";
 import selenium from "./selenium";
+import housekeeper from "./housekeeper";
+import homeowner from "./homeowner";
 import bot from "./bot";
 
 function route(app) {
@@ -84,7 +86,22 @@ function route(app) {
   );
 
   app.use(
-    "/v1/api/bot",
+    "/v1/api/homeowner",
+    function (req, res, next) {
+      next();
+    },
+    homeowner
+  );
+
+  app.use(
+    "/v1/api/housekeeper",
+    function (req, res, next) {
+      next();
+    },
+    housekeeper
+  );
+  app.use(
+    "/v1/api/bot/telegram",
     function (req, res, next) {
       next();
     },
