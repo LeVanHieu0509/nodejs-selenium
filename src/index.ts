@@ -34,7 +34,7 @@ const bootstrap = async () => {
     const corsConfig = {
       methods: "GET, HEAD, PUT,PATCH,POST,DELETE,OPTIONS",
       credentials: true,
-      origin: [/localhost*/],
+      origin: "*",
     };
 
     require("./dbs/init.my-sql");
