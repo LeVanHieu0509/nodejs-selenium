@@ -11,3 +11,7 @@ export const MESSAGE_GET_SUCCESS = "Bạn đã lấy thành công!";
 export const MESSAGE_PRODUCT_CODE_CONFLICT = "Mã Code đã bị trùng với sản phẩm khác, vui lòng nhập mã khác!";
 export const MESSAGE_PRODUCT_BAR_CODE_CONFLICT = "Mã Vạch đã bị trùng với sản phẩm khác, vui lòng nhập mã khác!";
 export const MESSAGE_RESET_SUCCESS = "Bạn đã đặt lại mật khẩu thành công!";
+export const MESSAGE_PHONE_NUMBER_REGISTERED =
+  "Số điện thoại của bạn đã được đăng ký! Chúng tôi sẽ sớm liên hệ với bạn!";
+
+export const MESSAGE_PHONE_NUMBER_INVALID = "Số điện thoại không đúng định dạng!";
