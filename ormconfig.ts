@@ -1,30 +1,31 @@
+function env(key: any, defaulValue?: any) {
+  return process.env[key] ?? defaulValue;
+}
+
 module.exports = {
   type: "mysql",
+  //database config Azure
   host: process.env.DB_HOST,
   port: parseInt(`${process.env.DB_PORT}`),
   username: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
-  synchronize: true,
-  logging: true,
-  // entities: ["dist/apps/modules/entities/*.js"],
-  // logging: true,
-  entities: ["src/apps/modules/entities/*.ts"],
-  subscribers: ["src/subscriber/**/*.ts"],
-  migrations: ["src/migration/**/*.ts"],
-  extra: {
-    charset: "utf8mb4",
-  },
-  // connectionLimit: 8,
-  // options: {
-  //   encrypt: false,
-  //   useUTC: true,
-  // },
 
-  // maxPoolSize: 90, // đặt giới hạn số kết nối trong pool
-  // pool: {
-  //   max: 100,
-  //   min: 0,
-  //   idleTimeoutMillis: 3600000,
-  // },
+  options: {
+    encrypt: true,
+    trustServerCertificate: true,
+  },
+  synchronize: false,
+  logger: "advanced-console",
+  logging: env("NODE_ENV") === "production" ? ["error", "warn"] : "all",
+  cache: true,
+  dropSchema: false,
+  entities: env("NODE_ENV") !== "test" ? ["dist/apps/modules/entities/*.js"] : ["src/apps/modules/entities/*.ts"],
+  migrations: ["dist/migration/**/*.js"],
+  subscribers: ["dist/subscriber/**/*.js"],
+  cli: {
+    entitiesDir: "dist/models",
+    migrationsDir: "dist/migration",
+    subscribersDir: "dist/subscriber",
+  },
 };
