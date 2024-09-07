@@ -1,7 +1,3 @@
-function env(key: any, defaulValue?: any) {
-  return process.env[key] ?? defaulValue;
-}
-
 module.exports = {
   type: "mysql",
   //database config Azure
@@ -17,10 +13,10 @@ module.exports = {
   },
   synchronize: false,
   logger: "advanced-console",
-  logging: env("NODE_ENV") === "production" ? ["error", "warn"] : "all",
+  logging: process.env.NODE_ENV === "production" ? ["error", "warn"] : "all",
   cache: true,
   dropSchema: false,
-  entities: env("NODE_ENV") !== "test" ? ["dist/apps/modules/entities/*.js"] : ["src/apps/modules/entities/*.ts"],
+  entities: process.env.NODE_ENV !== "test" ? ["dist/apps/modules/entities/*.js"] : ["src/apps/modules/entities/*.ts"],
   migrations: ["dist/migration/**/*.js"],
   subscribers: ["dist/subscriber/**/*.js"],
   cli: {
