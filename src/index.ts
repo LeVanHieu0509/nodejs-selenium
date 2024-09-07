@@ -32,9 +32,10 @@ const bootstrap = async () => {
     // await TypeORM.createConnection();
 
     const corsConfig = {
-      methods: "GET, HEAD, PUT,PATCH,POST,DELETE,OPTIONS",
+      methods: ["GET", "POST"],
       credentials: true,
-      origin: "*",
+      origin: true, // Need whitelist
+      optionsSuccessStatus: 200,
     };
 
     require("./dbs/init.my-sql");
