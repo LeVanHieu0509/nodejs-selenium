@@ -5,30 +5,17 @@ import {
   MESSAGE_ADD_SUCCESS,
   MESSAGE_NOTFOUND,
   MESSAGE_PHONE_NUMBER_INVALID,
+  MESSAGE_UPDATE_FAILED,
   MESSAGE_UPDATE_SUCCESS,
 } from "../../constants";
 import { HomeOwner } from "../../modules/entities/homeowner.entity";
 import { HomeownerRepository } from "../../repositories/homeowner.reposiotory";
 import { canSubmitFormHomeOwner, getHomeOwnerById, getHomeOwnerByPhone } from "./repo.service";
 import { validatePhone } from "../../../helpers";
+import { getBotTelegramHomeowner } from "../bot/bot.service";
 
 export const createHomeowner = async (data: HomeOwner) => {
-  //1. User nhập input
-  //2. 1 Chủ có thể submit nhiều lần.
-  //3. Làm sao để chặn được user spam nhiều lần
-  //4. Dựa vào số điện thoại để check rate limit date => sau 1p mới được submit
-
-  let {
-    name_owner,
-    address_owner,
-    phone_owner,
-    time_owner,
-    description_owner,
-    require_owner,
-    primary_owner,
-    salary_owner,
-    image_owner,
-  } = data ?? {};
+  let { phone_owner, ...rest } = data ?? {};
   const foundHomeowner = await getHomeOwnerByPhone({ phone_owner });
   const homeownerRepository = getCustomRepository(HomeownerRepository);
 
@@ -50,32 +37,54 @@ export const createHomeowner = async (data: HomeOwner) => {
     });
   }
 
-  const product = homeownerRepository.create({
-    image_owner,
-    name_owner,
-    address_owner,
-    phone_owner,
-    time_owner,
-    description_owner,
-    require_owner,
-    primary_owner,
-    salary_owner,
-    status: "NEW",
-  });
+  // update if exist phone number
+  if (foundHomeowner && show) {
+    const result = await homeownerRepository.update(
+      {
+        id: foundHomeowner.id,
+      },
+      {
+        ...rest,
+      }
+    );
 
-  const newProduct = await homeownerRepository.save(product);
+    if (result.affected == 1) {
+      return responseClient({
+        status: "1",
+        message: MESSAGE_UPDATE_SUCCESS,
+      });
+    } else {
+      return responseClient({
+        status: "-1",
+        message: MESSAGE_UPDATE_FAILED,
+      });
+    }
+  }
 
-  if (newProduct) {
-    return responseClient({
-      status: "1",
-      data: newProduct,
-      message: MESSAGE_ADD_SUCCESS,
+  //create new
+  if (!foundHomeowner) {
+    const product = homeownerRepository.create({
+      ...rest,
+      phone_owner,
+      status: "NEW",
     });
-  } else {
-    return responseClient({
-      status: "-1",
-      message: MESSAGE_ADD_FAILED,
-    });
+
+    const newProduct = await homeownerRepository.save(product);
+
+    if (newProduct) {
+      await getBotTelegramHomeowner(data);
+
+      return responseClient({
+        status: "1",
+        data: newProduct,
+        message: MESSAGE_ADD_SUCCESS,
+      });
+    } else {
+      return responseClient({
+        status: "-1",
+        message: MESSAGE_ADD_FAILED,
+      });
+    }
   }
 };
 

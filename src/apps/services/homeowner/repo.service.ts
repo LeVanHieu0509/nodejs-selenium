@@ -33,7 +33,7 @@ export const canSubmitFormHomeOwner = async (
     where: {
       phone_owner,
     },
-    order: { createdAt: "DESC" },
+    order: { updatedAt: "DESC" },
   });
 
   if (!latestSubmission) {
@@ -43,7 +43,7 @@ export const canSubmitFormHomeOwner = async (
 
   // Get the current time
   const currentTime = new Date();
-  const submissionTime = new Date(latestSubmission.createdAt);
+  const submissionTime = new Date(latestSubmission.updatedAt);
 
   // Calculate time difference in seconds
   const timeDifference = (currentTime.getTime() - submissionTime.getTime()) / 1000;

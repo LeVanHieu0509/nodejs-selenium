@@ -6,11 +6,13 @@ import {
   MESSAGE_ADD_SUCCESS,
   MESSAGE_NOTFOUND,
   MESSAGE_PHONE_NUMBER_INVALID,
+  MESSAGE_UPDATE_FAILED,
   MESSAGE_UPDATE_SUCCESS,
 } from "../../constants";
 import { HouseKeeper } from "../../modules/entities/housekeeper.entity";
 import { HouseKeeperRepository } from "../../repositories/housekeeper.reposiotory";
 import { canSubmitFormHousekeeper, getHousekeeperById, getHousekeeperByPhone } from "./repo.service";
+import { getBotTelegramHousekeeper } from "../bot/bot.service";
 
 export const createHousekeeper = async (data: HouseKeeper) => {
   //1. User nhập input
@@ -19,7 +21,7 @@ export const createHousekeeper = async (data: HouseKeeper) => {
   //4. Dựa vào số điện thoại để check rate limit date => sau 1p mới được submit
 
   let { phone_housekeeper, ...rest } = data ?? {};
-  const foundHomeowner = await getHousekeeperByPhone({ phone_housekeeper });
+  const foundHousekeeper = await getHousekeeperByPhone({ phone_housekeeper });
   const housekeeperRepository = getCustomRepository(HouseKeeperRepository);
 
   if (!phone_housekeeper || !validatePhone(phone_housekeeper)) {
@@ -32,7 +34,7 @@ export const createHousekeeper = async (data: HouseKeeper) => {
   // Check if the user is allowed to submit the form (based on 30 seconds limit)
   const { show, time } = (await canSubmitFormHousekeeper(phone_housekeeper)) ?? {};
 
-  if (foundHomeowner && !show) {
+  if (foundHousekeeper && !show) {
     return responseClient({
       status: "-1",
       data: time,
@@ -40,25 +42,51 @@ export const createHousekeeper = async (data: HouseKeeper) => {
     });
   }
 
-  const housekeeper = housekeeperRepository.create({
-    ...rest,
-    phone_housekeeper: phone_housekeeper,
-    status: "NEW",
-  });
+  if (foundHousekeeper && show) {
+    const result = await housekeeperRepository.update(
+      {
+        id: foundHousekeeper.id,
+      },
+      {
+        ...rest,
+      }
+    );
 
-  const newProduct = await housekeeperRepository.save(housekeeper);
+    if (result.affected == 1) {
+      return responseClient({
+        status: "1",
+        message: MESSAGE_UPDATE_SUCCESS,
+      });
+    } else {
+      return responseClient({
+        status: "-1",
+        message: MESSAGE_UPDATE_FAILED,
+      });
+    }
+  }
 
-  if (newProduct) {
-    return responseClient({
-      status: "1",
-      data: newProduct,
-      message: MESSAGE_ADD_SUCCESS,
+  if (!foundHousekeeper) {
+    const housekeeper = housekeeperRepository.create({
+      ...rest,
+      phone_housekeeper: phone_housekeeper,
+      status: "NEW",
     });
-  } else {
-    return responseClient({
-      status: "-1",
-      message: MESSAGE_ADD_FAILED,
-    });
+
+    const newProduct = await housekeeperRepository.save(housekeeper);
+
+    if (newProduct) {
+      await getBotTelegramHousekeeper(data);
+      return responseClient({
+        status: "1",
+        data: newProduct,
+        message: MESSAGE_ADD_SUCCESS,
+      });
+    } else {
+      return responseClient({
+        status: "-1",
+        message: MESSAGE_ADD_FAILED,
+      });
+    }
   }
 };
 

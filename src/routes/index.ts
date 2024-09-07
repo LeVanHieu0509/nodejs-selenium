@@ -101,7 +101,7 @@ function route(app) {
     housekeeper
   );
   app.use(
-    "/v1/api/bot",
+    "/v1/api/bot/telegram",
     function (req, res, next) {
       next();
     },

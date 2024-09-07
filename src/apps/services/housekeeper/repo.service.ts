@@ -32,7 +32,7 @@ export const canSubmitFormHousekeeper = async (
     where: {
       phone_housekeeper,
     },
-    order: { createdAt: "DESC" },
+    order: { updatedAt: "DESC" },
   });
 
   if (!latestSubmission) {
@@ -42,7 +42,7 @@ export const canSubmitFormHousekeeper = async (
 
   // Get the current time
   const currentTime = new Date();
-  const submissionTime = new Date(latestSubmission.createdAt);
+  const submissionTime = new Date(latestSubmission.updatedAt);
 
   // Calculate time difference in seconds
   const timeDifference = (currentTime.getTime() - submissionTime.getTime()) / 1000;
