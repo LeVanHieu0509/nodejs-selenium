@@ -40,9 +40,9 @@ export class HomeOwner {
   @Column({ type: "varchar", nullable: true })
   public primary_owner!: string;
 
-  @Field()
-  @Column({ type: "float", nullable: true })
-  public salary_owner!: number;
+  @Field((_type) => String)
+  @Column({ type: "varchar", nullable: true })
+  public salary_owner!: string;
 
   @Field()
   @Column({ type: "varchar", nullable: true })
