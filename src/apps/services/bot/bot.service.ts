@@ -26,7 +26,7 @@ CHỦ NHÀ
 👉 Mô tả công việc: ${description_owner}
 👉 Yêu cầu: ${require_owner}
 👉 Ưu tiên: ${primary_owner}
-👉 Mức lương: ${formatNumber(salary_owner)}
+👉 Mức lương: ${salary_owner}
 `
   );
 
@@ -69,7 +69,7 @@ GIÚP VIỆC
 👉 Gia đình: ${family_housekeeper}
 👉 Mong muốn công việc: ${skill_housekeeper}
 👉 Chuyên môn: ${desire_housekeeper}
-👉 Mức lương mong muốn: ${formatNumber(salary_housekeeper)}
+👉 Mức lương mong muốn: ${salary_housekeeper}
 `
   );
 
