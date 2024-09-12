@@ -7,4 +7,6 @@ const router = require("express").Router();
 
 router.post("/post-to-group-facebook", asyncHandler(SeleniumController.postToGroupFacebook));
 
+router.post("/post-fan-page-to-group-facebook", asyncHandler(SeleniumController.postFanPageToGroupFacebook));
+
 export default router;

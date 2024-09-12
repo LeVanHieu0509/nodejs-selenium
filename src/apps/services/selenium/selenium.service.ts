@@ -1,9 +1,7 @@
 // fixed just for testing, use moment();
-import { createDriver, delay, loginAccount, postToGroup } from "./repo.service";
+import { createDriver, delay, loginAccount, postToGroup, switchToFanPage } from "./repo.service";
 
 // Hàm để chuyển đổi các ký tự ngoài BMP thành mã escape
-
-
 
 interface PostData {
   email: string;
@@ -32,12 +30,81 @@ export const postToGroupFacebook = async ({ data }: TaskData) => {
         await driver.get("https://mbasic.facebook.com");
         await delay(2000);
         await loginAccount(driver, data[index].email, data[index].pass);
-        console.log({email:  data[index].email})
         for (const idGroup of data[index].listGroup) {
           await delay(2000);
           await driver.get(`https://mbasic.facebook.com/groups/${idGroup}`);
           const postContent = data[index].text;
-          const newConcatContent = postContent.concat(` #gioi_thieu_viec_lam_duc_phuc_${idGroup}`)
+          const newConcatContent = postContent.concat(` #gioi_thieu_viec_lam_duc_phuc_${idGroup}`);
+          const files = data[index].files;
+
+          await postToGroup(driver, newConcatContent, files);
+        }
+
+        state = "done";
+      } finally {
+        await driver.quit();
+      }
+    };
+
+    const tasks = Array.from({ length: count }, (_, index) => createAndExecuteTask(index));
+
+    await Promise.all(tasks);
+
+    if (state == "done") {
+      return {
+        status: "1",
+        data: state,
+        message: "Success",
+      };
+    } else {
+      return {
+        status: "1",
+        data: state,
+        message: "Success",
+      };
+    }
+  } catch (e) {
+    return {
+      status: "-1",
+      data: "",
+      message: "Not Found",
+    };
+  }
+};
+
+export const postFanPageToGroupFacebook = async ({ data }: TaskData) => {
+  let state = "init";
+  let count = data.length;
+  try {
+    const createAndExecuteTask = async (index) => {
+      const driver = await createDriver();
+
+      if (!driver) {
+        throw new Error("Vui lòng thử lại! lỗi driver rồi");
+      }
+
+      try {
+        await driver.manage().deleteAllCookies();
+        await driver.get("https://mbasic.facebook.com");
+        await delay(2000);
+        await loginAccount(driver, data[index].email, data[index].pass);
+        await switchToFanPage(driver);
+
+        for (const idGroup of data[index].listGroup) {
+          await delay(2000);
+
+          await driver.navigate().to(`https://mbasic.facebook.com/groups/${idGroup}/`);
+          await driver.navigate().to("https://mbasic.facebook.com/");
+          await driver.navigate().to(`https://mbasic.facebook.com/groups/${idGroup}/`);
+
+          await driver.executeScript("window.localStorage.clear(); window.sessionStorage.clear();");
+
+          await delay(2000);
+          const postContent = data[index].text;
+          const newConcatContent = postContent.concat(`
+🌟 Website: https://homeease.com.vn/
+🌟 Đăng ký chủ nhà: https://homeease.com.vn/dang-ky-thong-tin/dang-ky-chu-nha
+🌟 Đăng ký giúp việc: https://homeease.com.vn/dang-ky-thong-tin/dang-ky-giup-viec`);
           const files = data[index].files;
 
           await postToGroup(driver, newConcatContent, files);

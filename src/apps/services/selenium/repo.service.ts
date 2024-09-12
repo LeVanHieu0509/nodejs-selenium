@@ -23,6 +23,14 @@ export const uploadImage = async (driver: WebDriver, imagePath: string) => {
 };
 
 export const loginAccount = async (driver: WebDriver, email: string, pass: string) => {
+  await driver.executeScript(`
+    window.onbeforeunload = function(e) {
+      if (window.location.href.includes('m.facebook.com')) {
+        window.location.href = window.location.href.replace('m.facebook.com', 'mbasic.facebook.com');
+      }
+    };
+  `);
+
   try {
     // Nhập email
     const emailInput = await waitForElement(driver, By.id("m_login_email"));
@@ -37,11 +45,64 @@ export const loginAccount = async (driver: WebDriver, email: string, pass: strin
     // Nhấp vào nút đăng nhập
     const loginSubmit = await waitForElement(driver, By.name("login"));
     await loginSubmit.click();
-
+    await driver.executeScript(`
+      window.onbeforeunload = function(e) {
+        if (window.location.href.includes('m.facebook.com')) {
+          window.location.href = window.location.href.replace('m.facebook.com', 'mbasic.facebook.com');
+        }
+      };
+    `);
     // Tìm phần tử 'Lúc khác'
     const noSaveAccount = await waitForElement(driver, By.xpath("//a[contains(@href, '/login/save-device/cancel/')]"));
 
     await noSaveAccount.click();
+  } catch (e) {
+    console.error("Có lỗi xảy ra:", e);
+  }
+};
+
+export const switchToFanPage = async (driver: WebDriver) => {
+  try {
+    delay(4000);
+    await driver.get("https://m.facebook.com/profile.php?id=61564627061497");
+
+    // Tìm phần tử 'Lúc khác'
+    // const buttonMenu = await waitForElement(driver, By.xpath("//a[@accesskey='5' and text()='Menu']"));
+
+    // await buttonMenu.click();
+
+    // const textHomeEase = await waitForElement(driver, By.xpath("//a[contains(@href, 'facebook.com/61564627061497')]"));
+
+    // await textHomeEase.click();
+    // delay(2000);
+    delay(4000);
+    const switchProfiles = await waitForElement(
+      driver,
+      By.xpath("//div[@role='button' and @data-type='container' and contains(., 'Switch Profiles')]")
+    );
+
+    // if (switchProfiles) {
+    await switchProfiles.click();
+    delay(10000);
+    // } else {
+    //   const switchProfiles = await waitForElement(
+    //     driver,
+    //     By.xpath("//div[@role='button' and @data-type='container' and contains(., 'Chuyển trang cá nhân')]")
+    //   );
+    //   await switchProfiles.click();
+    // }
+
+    await driver.executeScript(`
+      const elements = document.querySelectorAll('.bg-s3::before');
+      elements.forEach(el => el.style.display = 'none');
+    `);
+    delay(3000);
+    const element = await driver.findElement(
+      By.xpath('//div[contains(text(), "HomeEase - Nền Tảng Kết Nối Việc Làm Toàn Quốc")]')
+    );
+    await driver.actions().move({ origin: element }).click().perform();
+
+    delay(5000);
   } catch (e) {
     console.error("Có lỗi xảy ra:", e);
   }
@@ -65,15 +126,15 @@ export const postToGroup = async (driver: WebDriver, content: string, files: str
     await xc_message.click();
     await driver.executeScript("arguments[0].value = arguments[1];", xc_message, content);
 
-    if(files){
+    if (files) {
       for (const file of files) {
         let f = cloneDeep(file) as any;
         const imagePath = path.resolve(__dirname, `C:/Users/Admin/Downloads/${f.fileName}`);
         await uploadImage(driver, imagePath);
       }
     }
-    
-    delay(5000)
+
+    delay(5000);
     const view_post = await waitForElement(driver, By.name("view_post"), 10000);
     await view_post.click();
     console.log("Dang thành cong");
@@ -137,6 +198,9 @@ export async function createDriver(): Promise<WebDriver> {
   options.setUserPreferences({
     credentials_enable_service: false,
   });
+
+  // const mobileEmulation = { deviceName: "iPhone X" };
+  // options.setMobileEmulation(mobileEmulation);
 
   // Tạo đối tượng WebDriver với các tùy chọn đã cấu hình
   const driver = new Builder().forBrowser("chrome").setChromeOptions(options).build();
