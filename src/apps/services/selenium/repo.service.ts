@@ -7,19 +7,19 @@ export function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export const uploadImage = async (driver: WebDriver, imagePath: string) => {
-  try {
-    const view_photo = await driver.wait(until.elementLocated(By.name("view_photo")), 10000);
-    await view_photo.click();
-
-    const fileInput = await driver.wait(until.elementLocated(By.css('input[type="file"]')), 10000);
-    await fileInput.sendKeys(imagePath);
-
-    const add_photo_done = await driver.wait(until.elementLocated(By.name("add_photo_done")), 10000);
-    await add_photo_done.click();
-  } catch (error) {
-    console.error("Lỗi khi tải lên ảnh:", error);
-  }
+export const uploadImage = async (driver: WebDriver, imagePath: string, type: string) => {
+      try {
+        const view_photo = await driver.wait(until.elementLocated(By.name("view_photo")), 10000);
+        await view_photo.click();
+    
+        const fileInput = await driver.wait(until.elementLocated(By.css('input[type="file"]')), 10000);
+        await fileInput.sendKeys(imagePath);
+    
+        const add_photo_done = await driver.wait(until.elementLocated(By.name("add_photo_done")), 10000);
+        await add_photo_done.click();
+      } catch (error) {
+        console.error("Lỗi khi tải lên ảnh:", error);
+      } 
 };
 
 export const loginAccount = async (driver: WebDriver, email: string, pass: string) => {
@@ -43,19 +43,30 @@ export const loginAccount = async (driver: WebDriver, email: string, pass: strin
     await passInput.sendKeys(pass);
 
     // Nhấp vào nút đăng nhập
-    const loginSubmit = await waitForElement(driver, By.name("login"));
-    await loginSubmit.click();
-    await driver.executeScript(`
-      window.onbeforeunload = function(e) {
-        if (window.location.href.includes('m.facebook.com')) {
-          window.location.href = window.location.href.replace('m.facebook.com', 'mbasic.facebook.com');
-        }
-      };
-    `);
-    // Tìm phần tử 'Lúc khác'
-    const noSaveAccount = await waitForElement(driver, By.xpath("//a[contains(@href, '/login/save-device/cancel/')]"));
 
-    await noSaveAccount.click();
+    const loginSubmit = await waitForElement(driver, By.xpath("//div[@role='button' and @aria-label='Đăng nhập']"),1000);
+
+    if(loginSubmit){
+      await loginSubmit.click();
+    }
+    else{
+      const loginSubmit = await waitForElement(driver, By.name("login"),1000);
+      await loginSubmit.click();
+    }
+
+    // Tìm phần tử 'Lúc khác'
+    const noSaveAccount = await waitForElement(driver, By.xpath("//a[contains(@href, '/login/save-device/cancel/')]"),1000);
+
+    if(noSaveAccount){
+      await noSaveAccount.click();
+    }
+    else{
+      const noSaveAccount = await waitForElement(driver, By.xpath("//div[@role='button' and @aria-label='Lúc khác']"));
+      await noSaveAccount.click();
+    }
+
+
+   
   } catch (e) {
     console.error("Có lỗi xảy ra:", e);
   }
@@ -65,32 +76,21 @@ export const switchToFanPage = async (driver: WebDriver) => {
   try {
     delay(4000);
     await driver.get("https://m.facebook.com/profile.php?id=61564627061497");
-
-    // Tìm phần tử 'Lúc khác'
-    // const buttonMenu = await waitForElement(driver, By.xpath("//a[@accesskey='5' and text()='Menu']"));
-
-    // await buttonMenu.click();
-
-    // const textHomeEase = await waitForElement(driver, By.xpath("//a[contains(@href, 'facebook.com/61564627061497')]"));
-
-    // await textHomeEase.click();
-    // delay(2000);
     delay(4000);
-    const switchProfiles = await waitForElement(
-      driver,
-      By.xpath("//div[@role='button' and @data-type='container' and contains(., 'Switch Profiles')]")
-    );
-
-    // if (switchProfiles) {
-    await switchProfiles.click();
-    delay(10000);
-    // } else {
-    //   const switchProfiles = await waitForElement(
-    //     driver,
-    //     By.xpath("//div[@role='button' and @data-type='container' and contains(., 'Chuyển trang cá nhân')]")
-    //   );
-    //   await switchProfiles.click();
-    // }
+   
+      const switchProfiles = await waitForElement(
+        driver,
+        By.xpath("//div[@role='button' and @aria-label='Chuyển trang cá nhân']"),10000
+      );
+    if(switchProfiles){
+      await switchProfiles.click();
+  
+    }else{
+      const switchProfiles = await waitForElement(
+        driver,
+        By.xpath("//div[@role='button' and @data-type='container' and contains(., 'Switch Profiles')]"),1000);
+      await switchProfiles.click();
+    }
 
     await driver.executeScript(`
       const elements = document.querySelectorAll('.bg-s3::before');
@@ -117,7 +117,7 @@ export async function waitForElement(driver: WebDriver, locator: By, timeout: nu
   } catch (e) {}
 }
 
-export const postToGroup = async (driver: WebDriver, content: string, files: string) => {
+export const postToGroup = async (driver: WebDriver, content: string, files: string, type?:string ) => {
   try {
     const view_overview = await waitForElement(driver, By.name("view_overview"), 10000);
     await view_overview.click();
@@ -129,8 +129,8 @@ export const postToGroup = async (driver: WebDriver, content: string, files: str
     if (files) {
       for (const file of files) {
         let f = cloneDeep(file) as any;
-        const imagePath = path.resolve(__dirname, `C:/Users/Admin/Downloads/${f.fileName}`);
-        await uploadImage(driver, imagePath);
+        const imagePath = path.resolve(__dirname, `/Downloads/${f.fileName}`);
+        await uploadImage(driver, imagePath, type);
       }
     }
 
@@ -198,9 +198,6 @@ export async function createDriver(): Promise<WebDriver> {
   options.setUserPreferences({
     credentials_enable_service: false,
   });
-
-  // const mobileEmulation = { deviceName: "iPhone X" };
-  // options.setMobileEmulation(mobileEmulation);
 
   // Tạo đối tượng WebDriver với các tùy chọn đã cấu hình
   const driver = new Builder().forBrowser("chrome").setChromeOptions(options).build();

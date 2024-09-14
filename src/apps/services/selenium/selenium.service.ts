@@ -18,6 +18,7 @@ export interface TaskData {
 export const postToGroupFacebook = async ({ data }: TaskData) => {
   let state = "init";
   let count = data.length;
+
   try {
     const createAndExecuteTask = async (index) => {
       const driver = await createDriver();
@@ -30,14 +31,19 @@ export const postToGroupFacebook = async ({ data }: TaskData) => {
         await driver.get("https://mbasic.facebook.com");
         await delay(2000);
         await loginAccount(driver, data[index].email, data[index].pass);
+
         for (const idGroup of data[index].listGroup) {
           await delay(2000);
+
           await driver.get(`https://mbasic.facebook.com/groups/${idGroup}`);
           const postContent = data[index].text;
-          const newConcatContent = postContent.concat(` #gioi_thieu_viec_lam_duc_phuc_${idGroup}`);
-          const files = data[index].files;
+          const newConcatContent = postContent.concat(`
+              #giupviecnha #chambe #giupviecnhaducphuc #giupviecnhahochiminh 
+              #HomeEase_Nen_Tang_Ket_Noi_Viec_Lam_Toan_Quoc #${idGroup}
+              🌟 Website: https://homeease.com.vn/`);
 
-          await postToGroup(driver, newConcatContent, files);
+          const files = data[index].files;
+          await postToGroup(driver, newConcatContent, files,"ca-nhan");
         }
 
         state = "done";
@@ -102,12 +108,10 @@ export const postFanPageToGroupFacebook = async ({ data }: TaskData) => {
           await delay(2000);
           const postContent = data[index].text;
           const newConcatContent = postContent.concat(`
-🌟 Website: https://homeease.com.vn/
-🌟 Đăng ký chủ nhà: https://homeease.com.vn/dang-ky-thong-tin/dang-ky-chu-nha
-🌟 Đăng ký giúp việc: https://homeease.com.vn/dang-ky-thong-tin/dang-ky-giup-viec`);
+🌟 Website: https://homeease.com.vn/`);
           const files = data[index].files;
 
-          await postToGroup(driver, newConcatContent, files);
+          await postToGroup(driver, newConcatContent, files, "fanpage");
         }
 
         state = "done";
@@ -141,3 +145,13 @@ export const postFanPageToGroupFacebook = async ({ data }: TaskData) => {
     };
   }
 };
+
+// cudanopalgardenthuduc
+// cudanchungcusaigonintela
+// khudancuhanhphuc
+// d1mensionzenity
+// 405981247432642
+// hcm0002
+// salevinhomes1
+// 2258504740844682
+// 469864193182841
