@@ -168,6 +168,7 @@ export async function crawlDataGroupId({ cursor, searchText = "" }) {
   try {
     const response = await axios.post(url, data, { headers });
     const responseData = response.data;
+
     // Trích xuất cursor từ response
     const endCursor = responseData?.data?.serpResponse.results.page_info?.end_cursor;
     const hasNextPage = responseData?.data?.serpResponse.results.page_info?.has_next_page;

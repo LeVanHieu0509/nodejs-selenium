@@ -29,7 +29,7 @@ export const postToGroupFacebook = async ({ data }: TaskData) => {
       }
 
       try {
-        await driver.get("https://mbasic.facebook.com");
+        await driver.get("https://m.facebook.com");
         await delay(2000);
         const statusLogin = await loginAccount(driver, data[index].email, data[index].pass);
 
@@ -44,11 +44,11 @@ export const postToGroupFacebook = async ({ data }: TaskData) => {
           const postContent = data[index].text;
           const newConcatContent = postContent.concat(`
               #giupviecnha #chambe #giupviecnhaducphuc #giupviecnhahochiminh 
-              #HomeEase_Nen_Tang_Ket_Noi_Viec_Lam_Toan_Quoc #${idGroup}
-              🌟 Website: https://homeease.com.vn/`);
+              #giupviec_${idGroup}
+             `);
 
           const files = data[index].files;
-          await postToGroup(driver, postContent, files, "ca-nhan");
+          await postToGroup(driver, newConcatContent, files, "ca-nhan");
         }
 
         state = "done";
@@ -111,10 +111,12 @@ export const postFanPageToGroupFacebook = async ({ data }: TaskData) => {
           await delay(2000);
           const postContent = data[index].text;
           const newConcatContent = postContent.concat(`
-🌟 Website: https://homeease.com.vn/`);
+            #giupviecnha #chambe #giupviecnhaducphuc #giupviecnhahochiminh 
+            #giupviec_${idGroup}
+           `);
           const files = data[index].files;
 
-          await postToGroupPageM(driver, postContent, files, "fanpage");
+          await postToGroupPageM(driver, newConcatContent, files, "fanpage");
         }
 
         state = "done";
