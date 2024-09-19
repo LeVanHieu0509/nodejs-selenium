@@ -8,28 +8,21 @@ export function delay(ms: number): Promise<void> {
 }
 
 export const uploadImage = async (driver: WebDriver, imagePath: string, type: string) => {
-      try {
-        const view_photo = await driver.wait(until.elementLocated(By.name("view_photo")), 10000);
-        await view_photo.click();
-    
-        const fileInput = await driver.wait(until.elementLocated(By.css('input[type="file"]')), 10000);
-        await fileInput.sendKeys(imagePath);
-    
-        const add_photo_done = await driver.wait(until.elementLocated(By.name("add_photo_done")), 10000);
-        await add_photo_done.click();
-      } catch (error) {
-        console.error("Lỗi khi tải lên ảnh:", error);
-      } 
+  try {
+    const view_photo = await driver.wait(until.elementLocated(By.name("view_photo")), 10000);
+    await view_photo.click();
+
+    const fileInput = await driver.wait(until.elementLocated(By.css('input[type="file"]')), 10000);
+    await fileInput.sendKeys(imagePath);
+
+    const add_photo_done = await driver.wait(until.elementLocated(By.name("add_photo_done")), 10000);
+    await add_photo_done.click();
+  } catch (error) {
+    console.error("Lỗi khi tải lên ảnh:", error);
+  }
 };
 
 export const loginAccount = async (driver: WebDriver, email: string, pass: string) => {
-  await driver.executeScript(`
-    window.onbeforeunload = function(e) {
-      if (window.location.href.includes('m.facebook.com')) {
-        window.location.href = window.location.href.replace('m.facebook.com', 'mbasic.facebook.com');
-      }
-    };
-  `);
 
   try {
     // Nhập email
@@ -44,31 +37,36 @@ export const loginAccount = async (driver: WebDriver, email: string, pass: strin
 
     // Nhấp vào nút đăng nhập
 
-    const loginSubmit = await waitForElement(driver, By.xpath("//div[@role='button' and @aria-label='Đăng nhập']"),1000);
-
-    if(loginSubmit){
-      await loginSubmit.click();
-    }
-    else{
-      const loginSubmit = await waitForElement(driver, By.name("login"),1000);
+    const loginSubmit1 = await waitForElement(driver, By.xpath("//div[@role='button' and @aria-label='Log in']"), 1000);
+    const loginSubmit2 = await waitForElement(driver, By.xpath("//div[@role='button' and @aria-label='Đăng nhập']"), 1000);
+    
+    if (loginSubmit1) {
+      await loginSubmit1.click();
+    } else if(loginSubmit2){
+      await loginSubmit2.click();
+    } else{
+      const loginSubmit = await waitForElement(driver, By.name("login"), 1000);
       await loginSubmit.click();
     }
 
     // Tìm phần tử 'Lúc khác'
-    const noSaveAccount = await waitForElement(driver, By.xpath("//a[contains(@href, '/login/save-device/cancel/')]"),1000);
+    const noSaveAccount = await waitForElement(
+      driver,
+      By.xpath("//a[contains(@href, '/login/save-device/cancel/')]"),
+      1000
+    );
 
-    if(noSaveAccount){
+    if (noSaveAccount) {
       await noSaveAccount.click();
-    }
-    else{
+    } else {
       const noSaveAccount = await waitForElement(driver, By.xpath("//div[@role='button' and @aria-label='Lúc khác']"));
       await noSaveAccount.click();
     }
 
-
-   
+    return true;
   } catch (e) {
     console.error("Có lỗi xảy ra:", e);
+    return false;
   }
 };
 
@@ -77,18 +75,20 @@ export const switchToFanPage = async (driver: WebDriver) => {
     delay(4000);
     await driver.get("https://m.facebook.com/profile.php?id=61564627061497");
     delay(4000);
-   
-      const switchProfiles = await waitForElement(
-        driver,
-        By.xpath("//div[@role='button' and @aria-label='Chuyển trang cá nhân']"),10000
-      );
-    if(switchProfiles){
+
+    const switchProfiles = await waitForElement(
+      driver,
+      By.xpath("//div[@role='button' and @aria-label='Chuyển trang cá nhân']"),
+      10000
+    );
+    if (switchProfiles) {
       await switchProfiles.click();
-  
-    }else{
+    } else {
       const switchProfiles = await waitForElement(
         driver,
-        By.xpath("//div[@role='button' and @data-type='container' and contains(., 'Switch Profiles')]"),1000);
+        By.xpath("//div[@role='button' and @data-type='container' and contains(., 'Switch Profiles')]"),
+        1000
+      );
       await switchProfiles.click();
     }
 
@@ -117,7 +117,7 @@ export async function waitForElement(driver: WebDriver, locator: By, timeout: nu
   } catch (e) {}
 }
 
-export const postToGroup = async (driver: WebDriver, content: string, files: string, type?:string ) => {
+export const postToGroup = async (driver: WebDriver, content: string, files: string, type?: string) => {
   try {
     const view_overview = await waitForElement(driver, By.name("view_overview"), 10000);
     await view_overview.click();
@@ -133,6 +133,58 @@ export const postToGroup = async (driver: WebDriver, content: string, files: str
         await uploadImage(driver, imagePath, type);
       }
     }
+
+    delay(5000);
+    const view_post = await waitForElement(driver, By.name("view_post"), 10000);
+    await view_post.click();
+    console.log("Dang thành cong");
+    console.log("-----------------------------------------------------------------");
+
+    return true;
+  } catch (e) {
+    console.log("Lỗi khi tìm kiếm hoặc nhấp vào phần tử:", e);
+
+    return false;
+  }
+};
+
+export const postToGroupPageM = async (driver: WebDriver, content: string, files: string, type?: string) => {
+  try {
+    const element = await driver.findElement(By.xpath("//div[text()='Write something...']"));
+    await driver.executeScript("arguments[0].click();", element);
+
+    const xc_message = await waitForElement(
+      driver,
+      By.xpath("//div[@role='button' and @aria-label='Write something' and @class='m']"),
+      10000
+    );
+    await xc_message.click();
+    delay(2000);
+
+    // Locate the target element
+
+    // Check if the element is an input or textarea
+    const containerXPath = "//div[@class='textbox-container with-mentions']";
+    const container = await driver.wait(until.elementLocated(By.xpath(containerXPath)), 10000);
+    await driver.wait(until.elementIsVisible(container), 10000);
+
+    // Locate the textarea inside the container
+    const textarea = await driver.findElement(By.css(".textbox-container.with-mentions textarea.textbox"));
+
+    // Clear any existing value
+    await textarea.clear();
+
+    // Set the new value
+    // await textarea.sendKeys(content);
+    await driver.executeScript("arguments[0].value = arguments[1];", textarea, content);
+
+    // if (files) {
+    //   for (const file of files) {
+    //     let f = cloneDeep(file) as any;
+    //     const imagePath = path.resolve(__dirname, `Downloads/${f.fileName}`);
+    //     await uploadImage(driver, imagePath, type);
+    //   }
+    // }
 
     delay(5000);
     const view_post = await waitForElement(driver, By.name("view_post"), 10000);
