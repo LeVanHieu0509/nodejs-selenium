@@ -133,7 +133,7 @@ export const postToGroup = async (driver: WebDriver, content: string, files: str
     if (files) {
       for (const file of files) {
         let f = cloneDeep(file) as any;
-        const imagePath = path.resolve(__dirname, `Downloads/${f.fileName}`);
+        const imagePath = path.resolve(__dirname, `/Users/hieulevan/Downloads/${f.fileName}`);
         await uploadImage(driver, imagePath, type);
       }
     }
@@ -265,4 +265,96 @@ export async function createDriver(): Promise<WebDriver> {
   });
 
   return driver;
+}
+
+export async function getDTSGToken() {
+  const options = new chrome.Options();
+
+  // Thêm các tham số cấu hình cho Chrome
+  options.addArguments(
+    "--lang=vi",
+    "--headless",
+    "window-size=200,450",
+    "--disable-3d-apis",
+    "--disable-background-networking",
+    "--disable-bundled-ppapi-flash",
+    "--disable-client-side-phishing-detection",
+    "--disable-default-apps",
+    "--disable-hang-monitor",
+    "--disable-prompt-on-repost",
+    "--disable-sync",
+    "--disable-webgl",
+    "--enable-blink-features=ShadowDOMV0",
+    "--enable-logging",
+    "--disable-notifications",
+    "--no-sandbox",
+    "--disable-gpu",
+    "--disable-dev-shm-usage",
+    "--disable-web-security",
+    "--disable-rtc-smoothness-algorithm",
+    "--disable-webrtc-hw-decoding",
+    "--disable-webrtc-hw-encoding",
+    "--disable-webrtc-multiple-routes",
+    "--disable-webrtc-hw-vp8-encoding",
+    "--enforce-webrtc-ip-permission-check",
+    "--force-webrtc-ip-handling-policy",
+    "--ignore-certificate-errors",
+    "--disable-infobars",
+    "--disable-blink-features=BlockCredentialedSubresources",
+    "--disable-popup-blocking",
+    "--mute-audio",
+    "--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/98.0.4758.85 Mobile/15E148 Safari/604.1",
+    "--disable-blink-features=AutomationControlled",
+    "--blink-settings=imagesEnabled=false"
+  );
+
+  // Tạo đối tượng WebDriver với các tùy chọn đã cấu hình
+  const driver = new Builder().forBrowser("chrome").setChromeOptions(options).build();
+
+  try {
+    await driver.get("https://m.facebook.com");
+    await loginAccount(driver, "levanhieu.hex@gmail.com", "05092001");
+
+    // Mở trang nhóm Facebook
+    await driver.get("https://www.facebook.com/groups/feed/");
+    await driver.sleep(2000);
+    // Lấy mã nguồn của trang
+    const pageSource = await driver.getPageSource();
+
+    const initDtsgMatch = pageSource.match(/"initDtsg":"(.*?)"/);
+    const token = initDtsgMatch ? initDtsgMatch[1] : null;
+
+    // Lấy tất cả cookie từ trình duyệt
+    let cookies = await driver.manage().getCookies();
+
+    // Chuyển đổi mảng cookies thành một đối tượng duy nhất
+    const convertCookie = cookies.reduce((acc, item) => {
+      acc[item.name] = item.value;
+      return acc;
+    }, {});
+
+    const cooki = {
+      datr: "93emZuYtC3monePxe-stds5b",
+      sb: "93emZvXYIcFK7aqjsRFZu1NW",
+      ps_l: "1",
+      ps_n: "1",
+      wl_cbv: "v2;client_version:2587;timestamp:1723265759",
+      locale: "vi_VN",
+      ar_debug: "1",
+      usida: "eyJ2ZXIiOjEsImlkIjoiQXNrM2Fma2R2NXlpaSIsInRpbWUiOjE3MjY3OTg3MzZ9",
+      c_user: "100083130741074",
+      xs: "30:MybWFK540QlVng:2:1726801127:-1:6308",
+      fr: "16hJAQRry2ytNuFma.AWWaKKrpH4HBvXmgeH1hEt9gV2U.Bm7NtO..AAA.0.0.Bm7OkK.AWX23s7iXR4",
+      wd: "1240x1491",
+      presence: 'C{"t3":[],"utc3":1726802212190,"v":1}',
+    };
+
+    const cookieString = Object.entries(cooki)
+      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value) as string)}`)
+      .join("; ");
+
+    return { token, cookie: cookieString };
+  } finally {
+    await driver.quit();
+  }
 }

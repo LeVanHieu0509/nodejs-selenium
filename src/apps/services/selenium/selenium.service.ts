@@ -1,6 +1,15 @@
 // fixed just for testing, use moment();
+import puppeteer from "puppeteer";
 import { crawlDataGroupId } from "../../../services/api";
-import { createDriver, delay, loginAccount, postToGroup, postToGroupPageM, switchToFanPage } from "./repo.service";
+import {
+  createDriver,
+  delay,
+  getDTSGToken,
+  loginAccount,
+  postToGroup,
+  postToGroupPageM,
+  switchToFanPage,
+} from "./repo.service";
 
 // Hàm để chuyển đổi các ký tự ngoài BMP thành mã escape
 
@@ -151,52 +160,68 @@ export const postFanPageToGroupFacebook = async ({ data }: TaskData) => {
   }
 };
 
+const dataFormat = (result) => {
+  const data = result.data.serpResponse.results.edges;
+
+  const finalData = data
+    .map((item) => {
+      let dataGroup = item.relay_rendering_strategy.view_model;
+      let checkMember = dataGroup.primary_snippet_text_with_entities.text.split("·")[1].split(" ")[1];
+
+      return {
+        id: dataGroup.profile.id,
+        name: dataGroup.profile.name,
+        member: checkMember,
+      };
+    })
+    .filter((i) => i.member.includes("K") && +i.member.slice(0, -1) > 10);
+
+  return finalData;
+};
+
 export const postToGetIdGroup = async (body) => {
   let i = 0;
-  let stop = false;
   let result = [];
 
-  const dataFormat = (result) => {
-    const data = result.data.serpResponse.results.edges;
-
-    const finalData = data
-      .map((item) => {
-        let dataGroup = item.relay_rendering_strategy.view_model;
-        let checkMember = dataGroup.primary_snippet_text_with_entities.text.split("·")[1].split(" ")[1];
-
-        return {
-          id: dataGroup.profile.id,
-          name: dataGroup.profile.name,
-          member: checkMember,
-        };
-      })
-      .filter((i) => i.member.includes("K") && +i.member.slice(0, -1) > 10);
-
-    return finalData;
-  };
   let endCursorInit = null;
+  const { token, cookie } = await getDTSGToken();
 
-  while (i < 10) {
-    const { data, endCursor, hasNextPage } = await crawlDataGroupId({ cursor: endCursorInit, searchText: body.data });
+  console.log({ token, cookie });
+  let token1 = token;
 
-    const formatD = dataFormat(data);
+  try {
+    for (i; i < 15; i++) {
+      console.log({ i });
+      const { data, endCursor, hasNextPage } = await crawlDataGroupId({
+        cursor: endCursorInit,
+        searchText: body.data,
+        token: token1,
+        cookie,
+      });
 
-    if (hasNextPage) {
-      endCursorInit = endCursor;
-      result.push(...formatD);
-      i++;
-    } else {
-      stop = true;
+      if (i == 0) {
+        const parsedData = data.match(/"dtsgToken":"(.*?)"/);
+        const dtsgToken = parsedData[1];
+
+        token1 = dtsgToken;
+      } else {
+        const formatD = dataFormat(data);
+
+        if (hasNextPage && formatD) {
+          endCursorInit = endCursor;
+          result.push(...formatD);
+        } else {
+          i = 15;
+        }
+      }
     }
-  }
 
-  if (result) {
     return {
       status: "1",
       data: result,
       message: "Success",
     };
-  } else {
+  } catch (error) {
     return {
       status: "-1",
       data: result,
