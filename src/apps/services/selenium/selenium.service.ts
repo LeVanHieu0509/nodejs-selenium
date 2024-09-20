@@ -190,7 +190,7 @@ export const postToGetIdGroup = async (body) => {
   let token1 = token;
 
   try {
-    for (i; i < 15; i++) {
+    for (i; i < 10; i++) {
       console.log({ i });
       const { data, endCursor, hasNextPage } = await crawlDataGroupId({
         cursor: endCursorInit,
@@ -211,7 +211,7 @@ export const postToGetIdGroup = async (body) => {
           endCursorInit = endCursor;
           result.push(...formatD);
         } else {
-          i = 15;
+          i = 10;
         }
       }
     }
