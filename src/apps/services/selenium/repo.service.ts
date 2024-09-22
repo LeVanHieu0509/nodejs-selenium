@@ -74,10 +74,18 @@ export const loginAccount = async (driver: WebDriver, email: string, pass: strin
   }
 };
 
-export const switchToFanPage = async (driver: WebDriver) => {
+export const switchToFanPage = async ({
+  driver,
+  name = "HomeEase - Nền Tảng Kết Nối Việc Làm Toàn Quốc",
+}: {
+  driver: WebDriver;
+  name?: string;
+}) => {
   try {
     delay(4000);
-    await driver.get("https://m.facebook.com/profile.php?id=61564627061497");
+    // await driver.get("https://m.facebook.com/profile.php?id=61564627061497");
+    await driver.get("https://www.facebook.com/JunnailHanQuoc");
+
     delay(4000);
 
     const switchProfiles = await waitForElement(
@@ -95,7 +103,7 @@ export const switchToFanPage = async (driver: WebDriver) => {
       );
       await switchProfiles.click();
     }
-
+    // Ẩn pseudo-elements bằng cách chỉnh sửa CSS của phần tử cha
     await driver.executeScript(`
       const elements = document.querySelectorAll('.bg-s3::before');
       elements.forEach(el => el.style.display = 'none');
@@ -104,6 +112,7 @@ export const switchToFanPage = async (driver: WebDriver) => {
     const element = await driver.findElement(
       By.xpath('//div[contains(text(), "HomeEase - Nền Tảng Kết Nối Việc Làm Toàn Quốc")]')
     );
+    // const element = await driver.findElement(By.xpath('//div[contains(text(), "JUN NAIL")]'));
     await driver.actions().move({ origin: element }).click().perform();
 
     delay(5000);
@@ -154,6 +163,17 @@ export const postToGroup = async (driver: WebDriver, content: string, files: str
 
 export const postToGroupPageM = async (driver: WebDriver, content: string, files: string, type?: string) => {
   try {
+    // Chờ cho phần tử xuất hiện và tìm theo XPath
+
+    let joinGroupButton = await waitForElement(
+      driver,
+      By.xpath('//div[@role="button" and @aria-label="Join group"]'),
+      10000
+    );
+
+    // Thực hiện click vào nút Join group
+    await joinGroupButton.click();
+    await driver.sleep(2000);
     const element = await driver.findElement(By.xpath("//div[text()='Write something...']"));
     await driver.executeScript("arguments[0].click();", element);
 
@@ -162,6 +182,7 @@ export const postToGroupPageM = async (driver: WebDriver, content: string, files
       By.xpath("//div[@role='button' and @aria-label='Write something' and @class='m']"),
       10000
     );
+
     await xc_message.click();
     delay(2000);
 
@@ -190,8 +211,14 @@ export const postToGroupPageM = async (driver: WebDriver, content: string, files
     //   }
     // }
 
-    delay(5000);
-    const view_post = await waitForElement(driver, By.name("view_post"), 10000);
+    await driver.sleep(2000);
+    const view_post = await waitForElement(
+      driver,
+      By.xpath(
+        '//div[@tabindex="0" and @data-focusable="true" and @data-mcomponent="MContainer" and contains(@class, "nb") and @data-type="container" and div[@role="button" and @aria-label="POST"]]'
+      ),
+      10000
+    );
     await view_post.click();
     console.log("Dang thành cong");
     console.log("-----------------------------------------------------------------");
@@ -206,7 +233,9 @@ export const postToGroupPageM = async (driver: WebDriver, content: string, files
 
 export async function createDriver(): Promise<WebDriver> {
   const options = new chrome.Options();
+  let divide = getRandomUserAgentMobile();
 
+  console.log({ divide });
   // Thêm các tham số cấu hình cho Chrome
   options.addArguments(
     "--lang=vi",
@@ -240,7 +269,7 @@ export async function createDriver(): Promise<WebDriver> {
     "--disable-blink-features=BlockCredentialedSubresources",
     "--disable-popup-blocking",
     "--mute-audio",
-    "--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/98.0.4758.85 Mobile/15E148 Safari/604.1",
+    `--user-agent=${divide}`,
     "--disable-blink-features=AutomationControlled",
     "--blink-settings=imagesEnabled=false"
   );
@@ -347,6 +376,7 @@ export async function getDTSGToken() {
       fr: "16hJAQRry2ytNuFma.AWWaKKrpH4HBvXmgeH1hEt9gV2U.Bm7NtO..AAA.0.0.Bm7OkK.AWX23s7iXR4",
       wd: "1240x1491",
       presence: 'C{"t3":[],"utc3":1726802212190,"v":1}',
+      ...convertCookie,
     };
 
     const cookieString = Object.entries(cooki)
@@ -357,4 +387,39 @@ export async function getDTSGToken() {
   } finally {
     await driver.quit();
   }
+}
+
+export function getCookieValue(cookieName, data) {
+  const cookies = data.split("; ");
+  const cookie = cookies.find((c) => c.startsWith(cookieName + "="));
+  return cookie ? cookie.split("=")[1] : null;
+}
+
+export function getRandomUserAgent() {
+  const userAgents = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Firefox/56.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/602.3.12 (KHTML, like Gecko) Version/10.1.2 Safari/602.3.12",
+    "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.68 Mobile Safari/537.36",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 10_3_1 like Mac OS X) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.0 Mobile/14E304 Safari/602.1",
+  ];
+
+  const randomIndex = Math.floor(Math.random() * userAgents.length);
+  return userAgents[randomIndex];
+}
+
+export function getRandomUserAgentMobile() {
+  const userAgents = [
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 15_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/98.0.4758.85 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 14_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/87.0.4280.163 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (iPod; CPU iPhone OS 14_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/87.0.4280.163 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 14_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/87.0.4280.163 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 13_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/80.0.3987.95 Mobile/15E148 Safari/604.1",
+    // Thêm các user-agent khác vào đây
+  ];
+
+  const randomIndex = Math.floor(Math.random() * userAgents.length);
+
+  console.log({ randomIndex });
+  return userAgents[randomIndex];
 }

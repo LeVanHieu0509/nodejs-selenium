@@ -1,10 +1,9 @@
 // fixed just for testing, use moment();
-import puppeteer from "puppeteer";
 import { crawlDataGroupId } from "../../../services/api";
 import {
   createDriver,
   delay,
-  getDTSGToken,
+  getRandomUserAgent,
   loginAccount,
   postToGroup,
   postToGroupPageM,
@@ -14,6 +13,7 @@ import {
 // Hàm để chuyển đổi các ký tự ngoài BMP thành mã escape
 
 interface PostData {
+  fanpage?: string;
   email: string;
   pass: string;
   listGroup: string[];
@@ -108,7 +108,7 @@ export const postFanPageToGroupFacebook = async ({ data }: TaskData) => {
         await driver.get("https://m.facebook.com");
         await delay(2000);
         await loginAccount(driver, data[index].email, data[index].pass);
-        await switchToFanPage(driver);
+        await switchToFanPage({ driver });
 
         for (const idGroup of data[index].listGroup) {
           await delay(2000);
@@ -167,14 +167,17 @@ const dataFormat = (result) => {
     .map((item) => {
       let dataGroup = item.relay_rendering_strategy.view_model;
       let checkMember = dataGroup.primary_snippet_text_with_entities.text.split("·")[1].split(" ")[1];
+      let privacy = dataGroup.primary_snippet_text_with_entities.text.split("·")[0].trim();
 
       return {
         id: dataGroup.profile.id,
         name: dataGroup.profile.name,
         member: checkMember,
+        privacy,
+        data: data,
       };
     })
-    .filter((i) => i.member.includes("K") && +i.member.slice(0, -1) > 10);
+    .filter((i) => i.member.includes("K") && +i.member.slice(0, -1) > 5 && i.privacy == "Công khai");
 
   return finalData;
 };
@@ -184,51 +187,44 @@ export const postToGetIdGroup = async (body) => {
   let result = [];
 
   let endCursorInit = null;
-  const { token, cookie } = await getDTSGToken();
+  // const { token, cookie } = await getDTSGToken();
+  let divide = getRandomUserAgent();
+  // try {
+  for (i; i < 10; i++) {
+    console.log({ i });
 
-  console.log({ token, cookie });
-  let token1 = token;
+    const { data, endCursor, hasNextPage } = await crawlDataGroupId({
+      cursor: endCursorInit,
+      searchText: body.search,
+      token: body.token,
+      cookie: body.cookie,
+      divide,
+    });
 
-  try {
-    for (i; i < 10; i++) {
-      console.log({ i });
-      const { data, endCursor, hasNextPage } = await crawlDataGroupId({
-        cursor: endCursorInit,
-        searchText: body.data,
-        token: token1,
-        cookie,
-      });
+    const formatD = dataFormat(data);
 
-      if (i == 0) {
-        const parsedData = data.match(/"dtsgToken":"(.*?)"/);
-        const dtsgToken = parsedData[1];
-
-        token1 = dtsgToken;
-      } else {
-        const formatD = dataFormat(data);
-
-        if (hasNextPage && formatD) {
-          endCursorInit = endCursor;
-          result.push(...formatD);
-        } else {
-          i = 10;
-        }
-      }
+    if (hasNextPage && formatD) {
+      endCursorInit = endCursor;
+      result.push(...formatD);
+    } else {
+      i = 10;
     }
-
-    return {
-      status: "1",
-      data: result,
-      message: "Success",
-    };
-  } catch (error) {
-    return {
-      status: "-1",
-      data: result,
-      message: "failed",
-    };
   }
+
+  return {
+    status: "1",
+    data: result,
+    message: "Success",
+  };
+  // } catch (error) {
+  //   return {
+  //     status: "-1",
+  //     data: error,
+  //     message: "failed",
+  //   };
+  // }
 };
+
 // cudanopalgardenthuduc
 // cudanchungcusaigonintela
 // khudancuhanhphuc
