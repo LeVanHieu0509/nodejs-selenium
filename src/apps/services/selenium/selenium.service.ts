@@ -108,14 +108,14 @@ export const postFanPageToGroupFacebook = async ({ data }: TaskData) => {
         await driver.get("https://m.facebook.com");
         await delay(2000);
         await loginAccount(driver, data[index].email, data[index].pass);
-        await switchToFanPage({ driver });
+        // await switchToFanPage({ driver });
 
         for (const idGroup of data[index].listGroup) {
           await delay(2000);
 
-          await driver.navigate().to(`https://m.facebook.com/groups/${idGroup}/`);
-          await driver.navigate().to("https://m.facebook.com/");
-          await driver.navigate().to(`https://m.facebook.com/groups/${idGroup}/`);
+          await driver.navigate().to(`https://mbasic.facebook.com/groups/${idGroup}/`);
+          await driver.navigate().to("https://mbasic.facebook.com/");
+          await driver.navigate().to(`https://mbasic.facebook.com/groups/${idGroup}/`);
 
           await delay(2000);
           const postContent = data[index].text;

@@ -64,7 +64,19 @@ export const loginAccount = async (driver: WebDriver, email: string, pass: strin
       await noSaveAccount.click();
     } else {
       const noSaveAccount = await waitForElement(driver, By.xpath("//div[@role='button' and @aria-label='Lúc khác']"));
-      await noSaveAccount.click();
+
+      if (noSaveAccount) {
+        await noSaveAccount.click();
+      } else {
+        const noSaveAccount1 = await waitForElement(
+          driver,
+          By.xpath("//div[@role='button' and @aria-label='Not now']")
+        );
+
+        if (noSaveAccount1) {
+          await noSaveAccount.click();
+        }
+      }
     }
 
     return true;
@@ -171,19 +183,46 @@ export const postToGroupPageM = async (driver: WebDriver, content: string, files
       10000
     );
 
-    // Thực hiện click vào nút Join group
-    await joinGroupButton.click();
-    await driver.sleep(2000);
-    const element = await driver.findElement(By.xpath("//div[text()='Write something...']"));
-    await driver.executeScript("arguments[0].click();", element);
+    if (joinGroupButton) {
+      // Thực hiện click vào nút Join group
+      await joinGroupButton.click();
+    } else {
+      let joinGroupButton = await waitForElement(
+        driver,
+        By.xpath('//div[@role="button" and @aria-label="Tham gia nhóm"]'),
+        10000
+      );
+      await joinGroupButton.click();
+    }
+
+    let element = await waitForElement(driver, By.xpath("//div[text()='Write something...']"), 10000);
+    let element1 = await waitForElement(driver, By.xpath('//div[contains(text(), "Bạn viết gì đi...")]'), 10000);
+
+    if (element) {
+      await driver.executeScript("arguments[0].click();", element);
+    }
+    if (element1) {
+      await driver.executeScript("arguments[0].click();", element1);
+    }
 
     const xc_message = await waitForElement(
       driver,
       By.xpath("//div[@role='button' and @aria-label='Write something' and @class='m']"),
       10000
     );
+    const xc_message1 = await waitForElement(
+      driver,
+      By.xpath('//div[@role="button" and contains(@aria-label, "Bạn viết gì đi")]'),
+      10000
+    );
 
-    await xc_message.click();
+    if (xc_message) {
+      await xc_message.click();
+    }
+
+    if (xc_message1) {
+      await xc_message.click();
+    }
     delay(2000);
 
     // Locate the target element
@@ -191,6 +230,7 @@ export const postToGroupPageM = async (driver: WebDriver, content: string, files
     // Check if the element is an input or textarea
     const containerXPath = "//div[@class='textbox-container with-mentions']";
     const container = await driver.wait(until.elementLocated(By.xpath(containerXPath)), 10000);
+
     await driver.wait(until.elementIsVisible(container), 10000);
 
     // Locate the textarea inside the container
@@ -240,7 +280,7 @@ export async function createDriver(): Promise<WebDriver> {
   options.addArguments(
     "--lang=vi",
     // "--incognito",
-    "window-size=200,450",
+    "window-size=500,1000",
     "--disable-3d-apis",
     "--disable-background-networking",
     "--disable-bundled-ppapi-flash",

@@ -90,6 +90,7 @@ export async function crawlDataGroupId({ cursor, searchText = "", token, cookie,
   };
 
   const c_user = getCookieValue("c_user", cookie);
+  console.log({ c_user });
   const data = querystring.stringify({
     av: c_user,
     __aaid: "0",
@@ -127,7 +128,7 @@ export async function crawlDataGroupId({ cursor, searchText = "", token, cookie,
       cursor: cursor,
     }),
     server_timestamps: true,
-    doc_id: "8646474315383063",
+    doc_id: "8124921897636473",
   });
 
   try {
