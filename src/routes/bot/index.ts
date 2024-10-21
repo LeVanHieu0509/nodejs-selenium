@@ -5,7 +5,7 @@ import { asyncHandler } from "../../helpers/asyncHandler";
 
 const router = require("express").Router();
 
-router.post("/homeowner", authentication, asyncHandler(BotTelegramController.getBotTelegramHomeowner));
-router.post("/housekeeper", authentication, asyncHandler(BotTelegramController.getBotTelegramHousekeeper));
+router.post("/homeowner", asyncHandler(BotTelegramController.getBotTelegramHomeowner));
+router.post("/housekeeper", asyncHandler(BotTelegramController.getBotTelegramHousekeeper));
 
 export default router;
